@@ -1,0 +1,10 @@
+{
+  "name": "Singgah",
+  "short_name": "Singgah",
+  "description": "Your personal map of places worth stopping by.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fbf6ef",
+  "theme_color": "#d9622b",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
