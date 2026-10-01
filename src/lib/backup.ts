@@ -61,7 +61,14 @@ export async function importBackup(file: File, mode: 'merge' | 'replace'): Promi
 
 /** Fill in fields that older backups (or older app versions) didn't have. */
 export function normalisePlace(p: Place): Place {
-  return { ...p, photoIds: p.photoIds ?? [], links: p.links ?? [], tags: p.tags ?? [], hours: p.hours ?? null }
+  return {
+    ...p,
+    photoIds: p.photoIds ?? [],
+    links: p.links ?? [],
+    tags: p.tags ?? [],
+    hours: p.hours ?? null,
+    practical: p.practical && typeof p.practical === 'object' ? p.practical : {},
+  }
 }
 
 export function downloadBlob(blob: Blob, filename: string) {

@@ -51,10 +51,20 @@ export interface Place {
   /** Stored without the leading # */
   tags: string[]
   visited: boolean
+  /** Practical tags (halal, surau, parking…), keyed by tag id from config/practicalTags.ts. Missing = Unknown. */
+  practical: PracticalInfo
   isSample?: boolean
   createdAt: number
   updatedAt: number
 }
+
+export interface PracticalEntry {
+  /** Option id (single) or option ids (multi). Absent = Unknown. */
+  value?: string | string[]
+  note?: string
+}
+
+export type PracticalInfo = Record<string, PracticalEntry>
 
 export interface Photo {
   id: string

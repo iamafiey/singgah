@@ -1,4 +1,4 @@
-import type { Category, DayHours, Place, WeekHours } from '../types'
+import type { Category, DayHours, Place, PracticalInfo, WeekHours } from '../types'
 
 export const PRESETS: Array<Pick<Category, 'emoji' | 'color'> & { key: string; name: string }> = [
   { key: 'cafe', name: 'Cafe', emoji: '☕', color: '#b0703c' },
@@ -20,12 +20,44 @@ const allDay: DayHours = { closed: false, allDay: true, ranges: [] }
 const week = (mon: DayHours, rest?: Partial<Record<number, DayHours>>): WeekHours =>
   Array.from({ length: 7 }, (_, i) => structuredClone(rest?.[i] ?? mon))
 
+/** Example practical tags for the sample spots (also applied to untouched samples when upgrading from v2). */
+export const SAMPLE_PRACTICAL: Record<string, PracticalInfo> = {
+  'sample-kopikopi': {
+    halal: { value: 'muslim-owned' },
+    surau: { value: 'yes', note: 'Surau at the masjid two shops down' },
+    parking: { value: 'moderate', note: 'Street parking, pay by app' },
+    setting: { value: 'mixed' },
+    kids: { value: ['highchair', 'stroller'] },
+  },
+  'sample-sate': {
+    halal: { value: 'jakim' },
+    parking: { value: 'hard', note: 'Busy at night — park at the open lot behind' },
+    setting: { value: 'covered' },
+  },
+  'sample-mamak': {
+    halal: { value: 'muslim-owned' },
+    parking: { value: 'easy' },
+    setting: { value: 'covered' },
+  },
+  'sample-cempaka': {
+    surau: { value: 'yes', note: 'Small surau near the main car park' },
+    parking: { value: 'easy' },
+    setting: { value: 'outdoor' },
+    kids: { value: ['stroller', 'shaded-play', 'fenced-play'] },
+  },
+  'sample-broga': {
+    parking: { value: 'hard', note: 'Paid parking at the base fills up before sunrise on weekends' },
+    setting: { value: 'outdoor' },
+  },
+}
+
 export function samplePlaces(now = Date.now()): Place[] {
   const base = { photoIds: [], links: [], visited: false, isSample: true, updatedAt: now }
   return [
     {
       ...base,
       id: 'sample-kopikopi',
+      practical: structuredClone(SAMPLE_PRACTICAL['sample-kopikopi']),
       name: 'Kopi Kopi Bangi',
       categoryId: 'cat-cafe',
       lat: 2.9628,
@@ -39,6 +71,7 @@ export function samplePlaces(now = Date.now()): Place[] {
     {
       ...base,
       id: 'sample-sate',
+      practical: structuredClone(SAMPLE_PRACTICAL['sample-sate']),
       name: 'Sate Kajang Haji Samuri',
       categoryId: 'cat-restaurant',
       lat: 2.9935,
@@ -52,6 +85,7 @@ export function samplePlaces(now = Date.now()): Place[] {
     {
       ...base,
       id: 'sample-mamak',
+      practical: structuredClone(SAMPLE_PRACTICAL['sample-mamak']),
       name: 'Mamak Bistro 24 Jam Kajang',
       categoryId: 'cat-mamak',
       lat: 2.9876,
@@ -65,6 +99,7 @@ export function samplePlaces(now = Date.now()): Place[] {
     {
       ...base,
       id: 'sample-cempaka',
+      practical: structuredClone(SAMPLE_PRACTICAL['sample-cempaka']),
       name: 'Taman Tasik Cempaka',
       categoryId: 'cat-park',
       lat: 2.9667,
@@ -78,6 +113,7 @@ export function samplePlaces(now = Date.now()): Place[] {
     {
       ...base,
       id: 'sample-broga',
+      practical: structuredClone(SAMPLE_PRACTICAL['sample-broga']),
       name: 'Bukit Broga',
       categoryId: 'cat-hiking',
       lat: 2.9433,

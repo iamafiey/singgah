@@ -31,6 +31,7 @@ const place = (id: string, lat: number, lng: number, hours: Place['hours'] = nul
   links: [],
   tags: [],
   visited: false,
+  practical: {},
   createdAt: 0,
   updatedAt: 0,
 })

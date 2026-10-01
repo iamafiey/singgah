@@ -2,8 +2,8 @@ import 'fake-indexeddb/auto'
 import Dexie from 'dexie'
 import { describe, expect, it } from 'vitest'
 
-describe('Dexie migration from v1', () => {
-  it('keeps existing spots and adds the new tables/fields', async () => {
+describe('Dexie migration from v1 to the current version', () => {
+  it('keeps existing spots and adds routes (v2) and practical tags (v3)', async () => {
     // Build a database exactly as v1 of the app created it.
     const old = new Dexie('singgah')
     old.version(1).stores({ categories: 'id, order', places: 'id, categoryId, createdAt, name, isSample', photos: 'id' })
@@ -49,10 +49,15 @@ describe('Dexie migration from v1', () => {
     // Now open with the current app schema.
     const { db, rememberRoute, MAX_SAVED_ROUTES } = await import('../db')
     await db.open()
-    expect(db.verno).toBeGreaterThanOrEqual(2)
+    expect(db.verno).toBe(3)
 
     const mine = await db.places.get('mine')
     expect(mine).toMatchObject({ name: 'My Kopitiam', notes: 'teh tarik', visited: true, tags: ['kopitiam'] })
+    // v3: user spots get empty practical info (all Unknown) — never inferred
+    expect(mine!.practical).toEqual({})
+    // untouched sample spots get the example tags
+    const sample = await db.places.get('sample-kopikopi')
+    expect(sample!.practical.halal).toEqual({ value: 'muslim-owned' })
     // populate must not run on upgrade: no duplicate seed data
     expect(await db.places.count()).toBe(2)
     expect(await db.categories.count()).toBe(1)

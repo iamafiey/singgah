@@ -7,6 +7,7 @@ import { SearchBar } from '../components/SearchBar'
 import { FilterChips } from '../components/FilterChips'
 import { CategoryPill, Cover, StatusBadge } from '../components/common'
 import { IconCheck, IconPlus } from '../components/Icons'
+import { PracticalBadges } from '../components/PracticalBadges'
 
 export function ListView() {
   const { t, categoryById, categories, catName, userLocation, sortBy, setSortBy, query, focusPlace } = useApp()
@@ -71,6 +72,7 @@ export function ListView() {
                     <StatusBadge place={p} now={now} />
                     {d !== null && <span>{formatDistance(d)}</span>}
                   </span>
+                  <PracticalBadges info={p.practical} max={4} />
                 </div>
               </button>
             </li>

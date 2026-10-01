@@ -108,6 +108,9 @@ interface AppState {
   setCatFilter: (ids: string[]) => void
   tagFilter: string | null
   setTagFilter: (t: string | null) => void
+  /** Active "More filters" ids from config/practicalTags.ts (AND-combined with categories). */
+  practicalFilter: string[]
+  setPracticalFilter: (ids: string[]) => void
   query: string
   setQuery: (q: string) => void
   sortBy: SortBy
@@ -127,6 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [sortBy, setSortBy] = usePersisted<SortBy>('singgah.sort', 'distance')
   const [catFilter, setCatFilter] = useState<string[]>([])
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [practicalFilter, setPracticalFilter] = useState<string[]>([])
   const [query, setQuery] = useState('')
   const [focus, setFocus] = useState<{ id: string; n: number } | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -219,6 +223,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCatFilter,
     tagFilter,
     setTagFilter,
+    practicalFilter,
+    setPracticalFilter,
     query,
     setQuery,
     sortBy,

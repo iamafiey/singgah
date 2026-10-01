@@ -3,22 +3,32 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './db'
 import { useApp } from './state'
 import type { Place } from './types'
+import { matchesFilters } from './lib/practical'
 
 export function usePlaces(): Place[] | undefined {
   return useLiveQuery(() => db.places.toArray(), [])
 }
 
-/** Places after applying the shared category + tag filters. */
+export interface PlaceFilters {
+  catFilter: string[]
+  tagFilter: string | null
+  practicalFilter: string[]
+}
+
+export function applyFilters(places: Place[], f: PlaceFilters): Place[] {
+  return places.filter(
+    (p) =>
+      (f.catFilter.length === 0 || f.catFilter.includes(p.categoryId)) &&
+      (!f.tagFilter || p.tags.includes(f.tagFilter)) &&
+      matchesFilters(p, f.practicalFilter),
+  )
+}
+
+/** Places after applying the shared category, hashtag and practical filters. */
 export function useFilteredPlaces(): Place[] | undefined {
   const places = usePlaces()
-  const { catFilter, tagFilter } = useApp()
-  return useMemo(
-    () =>
-      places?.filter(
-        (p) => (catFilter.length === 0 || catFilter.includes(p.categoryId)) && (!tagFilter || p.tags.includes(tagFilter)),
-      ),
-    [places, catFilter, tagFilter],
-  )
+  const { catFilter, tagFilter, practicalFilter } = useApp()
+  return useMemo(() => places && applyFilters(places, { catFilter, tagFilter, practicalFilter }), [places, catFilter, tagFilter, practicalFilter])
 }
 
 const urlCache = new Map<string, { url: string; refs: number }>()

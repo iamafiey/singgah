@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Category, Photo, Place, SavedRoute } from './types'
-import { presetCategories, samplePlaces } from './lib/seed'
+import { SAMPLE_PRACTICAL, presetCategories, samplePlaces } from './lib/seed'
 import { uid } from './lib/id'
 
 export const db = new Dexie('singgah') as Dexie & {
@@ -20,6 +20,21 @@ db.version(1).stores({
 db.version(2).stores({
   routes: 'id, usedAt',
 })
+
+// v3: practical tags (halal, surau, parking…). Not indexed — filtering happens in memory.
+// Every existing spot gets an empty `practical` (= all Unknown). Untouched sample spots get the example tags.
+db.version(3)
+  .stores({})
+  .upgrade((tx) =>
+    tx
+      .table('places')
+      .toCollection()
+      .modify((p: Place) => {
+        if (!p.practical || typeof p.practical !== 'object') {
+          p.practical = p.isSample && SAMPLE_PRACTICAL[p.id] ? structuredClone(SAMPLE_PRACTICAL[p.id]) : {}
+        }
+      }),
+  )
 
 db.on('populate', (tx) => {
   tx.table('categories').bulkAdd(presetCategories())

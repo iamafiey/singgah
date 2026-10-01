@@ -5,7 +5,9 @@ import { uid } from '../lib/id'
 import { compressImage, fetchImageBlob } from '../lib/image'
 import { reverseGeocode, type LatLng } from '../lib/geo'
 import { cleanTag, detectPlatform, enrichLink, isValidUrl, normaliseUrl, suggestTag, platformLabel } from '../lib/social'
-import type { Place, SocialLink, WeekHours } from '../types'
+import type { Place, PracticalInfo, SocialLink, WeekHours } from '../types'
+import { PracticalEditor } from '../components/PracticalEditor'
+import { cleanPractical } from '../lib/practical'
 import { HoursEditor } from '../components/HoursEditor'
 import { LocationPicker } from '../components/LocationPicker'
 import { LinkCard } from '../components/LinkCard'
@@ -22,6 +24,7 @@ interface Draft {
   photoIds: string[]
   links: SocialLink[]
   tags: string[]
+  practical: PracticalInfo
 }
 
 export function PlaceEditor({ id }: { id?: string }) {
@@ -37,6 +40,7 @@ export function PlaceEditor({ id }: { id?: string }) {
     photoIds: [],
     links: [],
     tags: [],
+    practical: {},
   })
   const addedPhotos = useRef(new Set<string>())
   const [busyPhotos, setBusyPhotos] = useState(0)
@@ -63,6 +67,7 @@ export function PlaceEditor({ id }: { id?: string }) {
           photoIds: p.photoIds,
           links: p.links,
           tags: p.tags,
+          practical: p.practical ?? {},
         })
       }
     })
@@ -176,7 +181,7 @@ export function PlaceEditor({ id }: { id?: string }) {
 
   const cancel = async () => {
     await cleanupAdded([])
-    goBack()
+    goBack(original ? `place/${original.id}` : 'map')
   }
 
   const save = async () => {
@@ -199,6 +204,7 @@ export function PlaceEditor({ id }: { id?: string }) {
       photoIds: draft.photoIds,
       links: draft.links,
       tags: pendingTag && !draft.tags.includes(pendingTag) ? [...draft.tags, pendingTag] : draft.tags,
+      practical: cleanPractical(draft.practical),
       visited: original?.visited ?? false,
       isSample: false,
       createdAt: original?.createdAt ?? now,
@@ -212,7 +218,7 @@ export function PlaceEditor({ id }: { id?: string }) {
     await cleanupAdded(place.photoIds)
     addedPhotos.current.clear()
     showToast(t('edit.saved'))
-    if (original) goBack()
+    if (original) goBack(`place/${place.id}`)
     else navigate(`place/${place.id}`, true)
   }
 
@@ -417,6 +423,8 @@ export function PlaceEditor({ id }: { id?: string }) {
           <span className="label">{t('edit.hours')}</span>
           <HoursEditor value={draft.hours} onChange={(h) => set('hours', h)} />
         </div>
+
+        <PracticalEditor value={draft.practical} onChange={(v) => set('practical', v)} />
 
         <label className="field">
           <span className="label">{t('edit.notes')}</span>

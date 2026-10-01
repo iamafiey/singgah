@@ -11,6 +11,7 @@ import type { Place, RoutePoint, SavedRoute } from '../types'
 import type { TKey } from '../i18n'
 import { FilterChips } from '../components/FilterChips'
 import { PlaceSearchField } from '../components/PlaceSearchField'
+import { PracticalBadges } from '../components/PracticalBadges'
 import { IconChevR, IconDown, IconEdit, IconNav, IconPin, IconUp, IconX } from '../components/Icons'
 
 export const DETOUR_OPTIONS = [1, 3, 5, 10]
@@ -288,6 +289,7 @@ export default function OnTheWayPanel({
                           <span>{arriveLabel(m.arrival)}</span>
                           <span className={`badge badge-${m.arrivalStatus === 'unknown' ? 'muted' : m.arrivalStatus}`}>{t(statusKey[m.arrivalStatus])}</span>
                         </span>
+                        <PracticalBadges info={m.place.practical} max={5} />
                       </span>
                     </button>
                     {active && (

@@ -1,12 +1,14 @@
 import type { CSSProperties } from 'react'
 import { useApp } from '../state'
 import { IconX } from './Icons'
+import { MoreFiltersButton } from './MoreFilters'
 
 export function FilterChips() {
   const { t, categories, catName, catFilter, setCatFilter, tagFilter, setTagFilter } = useApp()
   const toggle = (id: string) => setCatFilter(catFilter.includes(id) ? catFilter.filter((x) => x !== id) : [...catFilter, id])
   return (
     <div className="chips" role="toolbar" aria-label="Filters">
+      <MoreFiltersButton />
       <button className={`chip ${catFilter.length === 0 ? 'on' : ''}`} aria-pressed={catFilter.length === 0} onClick={() => setCatFilter([])}>
         {t('filter.all')}
       </button>

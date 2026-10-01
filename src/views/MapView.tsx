@@ -11,6 +11,7 @@ import { SearchBar } from '../components/SearchBar'
 import { FilterChips } from '../components/FilterChips'
 import { CategoryPill, Cover, StatusBadge } from '../components/common'
 import { IconChevR, IconLocate, IconPlus, IconRoute, IconX } from '../components/Icons'
+import { PracticalBadges } from '../components/PracticalBadges'
 
 // Loaded on demand so turf.js isn't part of the initial bundle.
 const OnTheWayPanel = lazy(() => import('./OnTheWayPanel'))
@@ -266,6 +267,7 @@ function PreviewSheet(props: {
             <CategoryPill category={category} />
             <StatusBadge place={place} now={now} />
           </div>
+          <PracticalBadges info={place.practical} variant="labels" max={3} />
           {distance && <p className="muted small">{distance} {props.awayLabel}</p>}
           <span className="sheet-more">
             {props.openLabel} <IconChevR size={16} />

@@ -10,6 +10,8 @@ import type { Place } from '../types'
 import { Cover, StatusBadge } from '../components/common'
 import { PhotoViewer, Thumb } from '../components/PhotoViewer'
 import { LinkCard } from '../components/LinkCard'
+import { PracticalDetails } from '../components/PracticalBadges'
+import { setValues } from '../lib/practical'
 import { IconBack, IconCheck, IconClock, IconEdit, IconExternal, IconMap, IconNav, IconNote, IconPin, IconShare, IconTrash, PlatformIcon } from '../components/Icons'
 
 export function PlacePage({ id }: { id: string }) {
@@ -155,6 +157,13 @@ export function PlacePage({ id }: { id: string }) {
             <p className="muted">{t('status.unknown')}</p>
           )}
         </section>
+
+        {setValues(place.practical).length > 0 && (
+          <section className="block">
+            <h2 className="block-title">{t('practical.title')}</h2>
+            <PracticalDetails info={place.practical} />
+          </section>
+        )}
 
         {place.notes && (
           <section className="block">
