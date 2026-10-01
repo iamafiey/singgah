@@ -175,7 +175,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const apply = () => {
       const dark = theme === 'dark' || (theme === 'system' && mq.matches)
       root.dataset.theme = dark ? 'dark' : 'light'
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#1c1714' : '#fbf6ef')
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#121212' : '#ffffff')
     }
     apply()
     mq.addEventListener('change', apply)

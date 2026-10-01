@@ -7,7 +7,7 @@ import { dayIndex, formatDay, formatTime, hasHours, openState } from '../lib/hou
 import { distanceKm, formatDistance, googleMapsUrl, wazeUrl } from '../lib/geo'
 import { areaFromAddress, suggestTag, tagUrls, tiktokSearchUrl } from '../lib/social'
 import type { Place } from '../types'
-import { CategoryPill, Cover, StatusBadge } from '../components/common'
+import { Cover, StatusBadge } from '../components/common'
 import { PhotoViewer, Thumb } from '../components/PhotoViewer'
 import { LinkCard } from '../components/LinkCard'
 import { IconBack, IconCheck, IconClock, IconEdit, IconExternal, IconMap, IconNav, IconNote, IconPin, IconShare, IconTrash, PlatformIcon } from '../components/Icons'
@@ -72,23 +72,26 @@ export function PlacePage({ id }: { id: string }) {
           <button className="icon-btn glass" aria-label={t('place.back')} onClick={() => goBack()}>
             <IconBack />
           </button>
-          <div className="row gap-s">
-            <button className="icon-btn glass" aria-label={t('place.share')} title={t('place.share')} onClick={share}>
-              <IconShare />
-            </button>
-            <button className="icon-btn glass" aria-label={t('place.edit')} title={t('place.edit')} onClick={() => navigate(`edit/${place.id}`)}>
-              <IconEdit />
-            </button>
-          </div>
         </div>
       </div>
 
       <div className="page-body">
         <h1 className="place-title">{place.name}</h1>
-        <div className="row wrap gap-s">
-          <CategoryPill category={category} />
-          <StatusBadge place={place} now={now} long />
-          {userLocation && <span className="muted small">{formatDistance(distanceKm(userLocation, place))}</span>}
+        {place.address && <p className="place-sub">{place.address}</p>}
+
+        <div className="stats">
+          <div className="stat">
+            <span className="stat-icon" aria-hidden>{category?.emoji ?? '📍'}</span>
+            <span className="stat-label">{catName(category)}</span>
+          </div>
+          <div className="stat">
+            <IconClock size={22} className="stat-svg" />
+            <StatusBadge place={place} now={now} long />
+          </div>
+          <div className="stat">
+            <IconPin size={22} className="stat-svg" />
+            <span className="stat-label">{userLocation ? formatDistance(distanceKm(userLocation, place)) : '—'}</span>
+          </div>
         </div>
 
         {place.photoIds.length > 1 && (
@@ -99,27 +102,33 @@ export function PlacePage({ id }: { id: string }) {
           </div>
         )}
 
-        <div className="action-grid">
-          <a className="action" href={wazeUrl(place)} target="_blank" rel="noopener noreferrer">
-            <IconNav /> {t('place.waze')}
+        <div className="directions">
+          <a className="btn btn-primary" href={wazeUrl(place)} target="_blank" rel="noopener noreferrer">
+            <IconNav size={18} /> {t('place.waze')}
           </a>
-          <a className="action" href={googleMapsUrl(place)} target="_blank" rel="noopener noreferrer">
-            <IconPin /> {t('place.gmaps')}
+          <a className="btn btn-outline" href={googleMapsUrl(place)} target="_blank" rel="noopener noreferrer">
+            <IconPin size={18} /> {t('place.gmaps')}
           </a>
-          <button className={`action ${place.visited ? 'action-on' : ''}`} onClick={() => update({ visited: !place.visited })} aria-pressed={place.visited}>
-            <IconCheck /> {place.visited ? t('place.visited') : t('place.markVisited')}
-          </button>
-          <button className="action" onClick={() => focusPlace(place.id)}>
-            <IconMap /> {t('tab.map')}
-          </button>
         </div>
 
-        {place.address && (
-          <section className="info-row">
-            <IconPin />
-            <p>{place.address}</p>
-          </section>
-        )}
+        <div className="quick-actions">
+          <button className={`qa ${place.visited ? 'on' : ''}`} onClick={() => update({ visited: !place.visited })} aria-pressed={place.visited}>
+            <span className="qa-icon"><IconCheck size={20} /></span>
+            {place.visited ? t('place.visited') : t('place.markVisited')}
+          </button>
+          <button className="qa" onClick={() => focusPlace(place.id)}>
+            <span className="qa-icon"><IconMap size={20} /></span>
+            {t('tab.map')}
+          </button>
+          <button className="qa" onClick={share}>
+            <span className="qa-icon"><IconShare size={20} /></span>
+            {t('place.share')}
+          </button>
+          <button className="qa" onClick={() => navigate(`edit/${place.id}`)}>
+            <span className="qa-icon"><IconEdit size={20} /></span>
+            {t('place.edit')}
+          </button>
+        </div>
 
         <section className="block">
           <h2 className="block-title">

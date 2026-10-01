@@ -14,7 +14,12 @@ export function StatusBadge({ place, now, long }: { place: Place; now: Date; lon
     return (
       <span className="badge badge-open">
         {t('status.open')}
-        {long && detail && <span className="badge-detail"> · {detail}</span>}
+        {long && detail && (
+        <>
+          <span className="badge-sep"> · </span>
+          <span className="badge-detail">{detail}</span>
+        </>
+      )}
       </span>
     )
   }
@@ -26,7 +31,12 @@ export function StatusBadge({ place, now, long }: { place: Place; now: Date; lon
   return (
     <span className="badge badge-closed">
       {t('status.closed')}
-      {long && detail && <span className="badge-detail"> · {detail}</span>}
+      {long && detail && (
+        <>
+          <span className="badge-sep"> · </span>
+          <span className="badge-detail">{detail}</span>
+        </>
+      )}
     </span>
   )
 }

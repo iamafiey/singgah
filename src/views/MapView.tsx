@@ -18,7 +18,7 @@ function pinIcon(cat: Category | undefined, selected: boolean, visited: boolean)
   const color = cat?.color ?? '#8a7768'
   return L.divIcon({
     className: 'pin-wrap',
-    html: `<div class="pin${selected ? ' pin-sel' : ''}${visited ? ' pin-visited' : ''}" style="--c:${escapeHtml(color)}"><span>${escapeHtml(cat?.emoji ?? '📍')}</span></div>`,
+    html: `<div class="pin${selected ? ' pin-sel' : ''}" style="--c:${escapeHtml(color)}"><span>${escapeHtml(cat?.emoji ?? '📍')}</span>${visited ? '<i class="pin-check">✓</i>' : ''}</div>`,
     iconSize: [40, 48],
     iconAnchor: [20, 46],
   })

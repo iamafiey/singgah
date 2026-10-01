@@ -56,21 +56,21 @@ export function ListView() {
           return (
             <li key={p.id}>
               <button className="card" onClick={() => navigate(`place/${p.id}`)}>
-                <Cover place={p} category={c} className="card-cover" />
+                <div className="card-media">
+                  <Cover place={p} category={c} className="card-cover" />
+                  {p.visited && (
+                    <span className="card-visited" aria-label={t('list.visited')} title={t('list.visited')}>
+                      <IconCheck size={14} />
+                    </span>
+                  )}
+                </div>
                 <div className="card-body">
                   <strong className="card-title">{p.name}</strong>
-                  <div className="row wrap gap-s">
-                    <CategoryPill category={c} />
-                    {p.visited && (
-                      <span className="badge badge-visited">
-                        <IconCheck size={12} /> {t('list.visited')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="row wrap gap-s small">
+                  <CategoryPill category={c} />
+                  <span className="meta">
                     <StatusBadge place={p} now={now} />
-                    {d !== null && <span className="muted">{formatDistance(d)}</span>}
-                  </div>
+                    {d !== null && <span>{formatDistance(d)}</span>}
+                  </span>
                 </div>
               </button>
             </li>
