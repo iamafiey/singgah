@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import L from 'leaflet'
 import 'leaflet.markercluster'
 import 'leaflet/dist/leaflet.css'
@@ -10,15 +10,18 @@ import type { Category, Place } from '../types'
 import { SearchBar } from '../components/SearchBar'
 import { FilterChips } from '../components/FilterChips'
 import { CategoryPill, Cover, StatusBadge } from '../components/common'
-import { IconChevR, IconLocate, IconPlus, IconX } from '../components/Icons'
+import { IconChevR, IconLocate, IconPlus, IconRoute, IconX } from '../components/Icons'
+
+// Loaded on demand so turf.js isn't part of the initial bundle.
+const OnTheWayPanel = lazy(() => import('./OnTheWayPanel'))
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 
-function pinIcon(cat: Category | undefined, selected: boolean, visited: boolean) {
+function pinIcon(cat: Category | undefined, selected: boolean, visited: boolean, dimmed = false) {
   const color = cat?.color ?? '#8a7768'
   return L.divIcon({
     className: 'pin-wrap',
-    html: `<div class="pin${selected ? ' pin-sel' : ''}" style="--c:${escapeHtml(color)}"><span>${escapeHtml(cat?.emoji ?? '📍')}</span>${visited ? '<i class="pin-check">✓</i>' : ''}</div>`,
+    html: `<div class="pin${selected ? ' pin-sel' : ''}${dimmed ? ' pin-dim' : ''}" style="--c:${escapeHtml(color)}"><span>${escapeHtml(cat?.emoji ?? '📍')}</span>${visited ? '<i class="pin-check">✓</i>' : ''}</div>`,
     iconSize: [40, 48],
     iconAnchor: [20, 46],
   })
@@ -32,10 +35,16 @@ export function MapView({ active }: { active: boolean }) {
   const elRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null)
+  /** Unclustered layer for "On the way" matches, so they stay visible at any zoom. */
+  const matchLayerRef = useRef<L.LayerGroup | null>(null)
   const userMarkerRef = useRef<L.CircleMarker | null>(null)
   const centredRef = useRef(false)
   const markersRef = useRef(new Map<string, L.Marker>())
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [otwOpen, setOtwOpen] = useState(false)
+  /** Matching place ids while "On the way" shows a route; null = no route, nothing dimmed. */
+  const [highlight, setHighlight] = useState<Set<string> | null>(null)
+  const onHighlight = useCallback((ids: Set<string> | null) => setHighlight(ids), [])
   const selectedRef = useRef<string | null>(null)
   selectedRef.current = selectedId
 
@@ -59,6 +68,7 @@ export function MapView({ active }: { active: boolean }) {
       },
     })
     map.addLayer(cluster)
+    matchLayerRef.current = L.layerGroup().addTo(map)
     map.on('click', () => setSelectedId(null))
     mapRef.current = map
     clusterRef.current = cluster
@@ -93,18 +103,23 @@ export function MapView({ active }: { active: boolean }) {
     }
   }, [userLocation, focus])
 
-  // Markers
+  // Markers. While "On the way" shows a route, matches move to an unclustered layer and the rest stay clustered (dimmed).
   useEffect(() => {
     const cluster = clusterRef.current
-    if (!cluster || !places) return
+    const matchLayer = matchLayerRef.current
+    if (!cluster || !matchLayer || !places) return
     cluster.clearLayers()
+    matchLayer.clearLayers()
     const markers = new Map<string, L.Marker>()
-    const list = places.map((p) => {
+    const clustered: L.Marker[] = []
+    for (const p of places) {
+      const isMatch = !!highlight?.has(p.id)
       const m = L.marker([p.lat, p.lng], {
-        icon: pinIcon(categoryById.get(p.categoryId), p.id === selectedRef.current, p.visited),
+        icon: pinIcon(categoryById.get(p.categoryId), p.id === selectedRef.current, p.visited, !!highlight && !isMatch),
         title: p.name,
         keyboard: true,
         riseOnHover: true,
+        zIndexOffset: isMatch ? 500 : 0,
       })
       m.on('click', (e) => {
         L.DomEvent.stopPropagation(e)
@@ -112,21 +127,24 @@ export function MapView({ active }: { active: boolean }) {
         else setSelectedId(p.id)
       })
       markers.set(p.id, m)
-      return m
-    })
-    cluster.addLayers(list)
+      if (isMatch) m.addTo(matchLayer)
+      else clustered.push(m)
+    }
+    cluster.addLayers(clustered)
     markersRef.current = markers
-  }, [places, categoryById])
+    elRef.current?.classList.toggle('otw-active', !!highlight)
+  }, [places, categoryById, highlight])
 
   // Highlight the selected pin without rebuilding everything
   useEffect(() => {
     for (const [id, m] of markersRef.current) {
       const p = places?.find((x) => x.id === id)
-      if (p) m.setIcon(pinIcon(categoryById.get(p.categoryId), id === selectedId, p.visited))
-      if (id === selectedId) m.setZIndexOffset(1000)
-      else m.setZIndexOffset(0)
+      const isMatch = !!highlight?.has(id)
+      if (p) m.setIcon(pinIcon(categoryById.get(p.categoryId), id === selectedId, p.visited, !!highlight && !isMatch))
+      m.setZIndexOffset(id === selectedId ? 1000 : isMatch ? 500 : 0)
     }
-  }, [selectedId, places, categoryById])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId])
 
   // Fly to a focused place (from search or the place page)
   useEffect(() => {
@@ -157,12 +175,18 @@ export function MapView({ active }: { active: boolean }) {
   return (
     <div className="map-screen" hidden={!active}>
       <div ref={elRef} className="map" />
-      <div className="map-top">
+      <div className="map-top" hidden={otwOpen}>
         <SearchBar onPickPlace={flyToPlace} />
         <FilterChips />
       </div>
 
-      <div className={`map-fabs ${selected ? 'raised' : ''}`}>
+      {!otwOpen && (
+        <button className="otw-fab" onClick={() => (setOtwOpen(true), setSelectedId(null))}>
+          <IconRoute size={20} /> {t('otw.button')}
+        </button>
+      )}
+
+      <div className={`map-fabs ${selected ? 'raised' : ''}`} hidden={otwOpen}>
         <button
           className="fab fab-small"
           aria-label={t('map.locate')}
@@ -179,6 +203,12 @@ export function MapView({ active }: { active: boolean }) {
           <IconPlus size={28} />
         </button>
       </div>
+
+      {otwOpen && (
+        <Suspense fallback={null}>
+          <OnTheWayPanel map={mapRef.current} places={places ?? []} onHighlight={onHighlight} onClose={() => setOtwOpen(false)} />
+        </Suspense>
+      )}
 
       {selected && (
         <PreviewSheet

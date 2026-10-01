@@ -61,3 +61,19 @@ export interface Photo {
   blob: Blob
   thumb: Blob
 }
+
+export interface RoutePoint {
+  label: string
+  lat: number
+  lng: number
+}
+
+/** A recently used "On the way" route. `from: null` means "my current location". */
+export interface SavedRoute {
+  id: string
+  name: string
+  from: RoutePoint | null
+  to: RoutePoint
+  detourKm: number
+  usedAt: number
+}

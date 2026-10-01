@@ -72,3 +72,5 @@ export const platformColor: Record<Platform, string> = {
   youtube: '#ff0000',
   other: '#6b5b4e',
 }
+export const IconRoute = (p: P) => (<svg {...base(p)}><circle cx="6" cy="19" r="2.5" /><circle cx="18" cy="5" r="2.5" /><path d="M8.5 19H16a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h7.5" /></svg>)
+export const IconFilter = (p: P) => (<svg {...base(p)}><path d="M4 6h16M7 12h10M10 18h4" /></svg>)
