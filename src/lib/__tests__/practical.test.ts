@@ -60,7 +60,7 @@ describe('search', () => {
     expect(s('stroller')).toEqual(['sample-cempaka', 'sample-kopikopi'])
     expect(s('jakim')).toEqual(['sample-sate'])
     expect(s('mesra stroller')).toEqual(['sample-cempaka', 'sample-kopikopi'])
-    expect(s('pay by app')).toEqual(['sample-kopikopi']) // notes are searchable
+    expect(s('bayar guna app')).toEqual(['sample-kopikopi']) // notes are searchable
   })
   it('"halal" does not find non-halal spots, "surau" does not find "No surau"', () => {
     const extra: Place[] = [

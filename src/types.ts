@@ -4,6 +4,10 @@ export interface Category {
   emoji: string
   color: string
   order: number
+  /** Line icon id from components/CategoryIcon.tsx — used on map labels and card corners. */
+  icon: string
+  /** Optional custom illustration (photo id in the photos table, PNG keeps transparency). */
+  illustrationId?: string
   /** Preset categories keep a key so their name follows the UI language until renamed. */
   presetKey?: string
   renamed?: boolean
@@ -51,6 +55,8 @@ export interface Place {
   /** Stored without the leading # */
   tags: string[]
   visited: boolean
+  /** Your own rating, 1–5. Absent = not rated. */
+  rating?: number
   /** Practical tags (halal, surau, parking…), keyed by tag id from config/practicalTags.ts. Missing = Unknown. */
   practical: PracticalInfo
   isSample?: boolean

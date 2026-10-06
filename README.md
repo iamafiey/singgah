@@ -16,6 +16,15 @@ A personal, mobile-first map of places you've saved, mostly found on social medi
 - **Data**: stored in IndexedDB (Dexie), with JSON backup export/import (merge or replace). Five sample spots around Bangi/Kajang come with a "Clear sample data" button.
 - Light/dark/system theme, and English / Bahasa Melayu.
 
+## Design
+
+- **Home (Peta):** half-height map with "Dalam perjalanan", filter and locate buttons and a weather chip, plus search, illustrated categories and "Persinggahan Berdekatan" below. While you search, the map shrinks to a strip; in On the way it goes full screen.
+- **Map labels:** spots show as name pills with their category's line icon, plus a ✓ when visited.
+- **Singgahan:** "Nak pergi" / "Sudah singgah" tabs, driven by the same visited flag as the map ✓.
+- **Language:** Bahasa Melayu by default; English is in Tetapan.
+- **Basemap:** an UrbanBlueprint-inspired style (`src/lib/mapStyle.ts`) on free OpenFreeMap vector tiles, rendered with MapLibre inside Leaflet and loaded on demand. It falls back to OpenStreetMap raster tiles when WebGL or the tile service isn't available.
+- **Illustrations:** put PNGs in `public/illustrations/` named after the preset key (`cafe.png`, `restaurant.png`, `mamak.png`, `park.png`, `playground.png`, `hiking.png`, `shopping.png`, `attraction.png`) plus `want.png` and `visited.png` for the Singgahan tabs, then list the names in `BUNDLED_ILLUSTRATIONS` (`src/components/CategoryIcon.tsx`). You can also upload an illustration per category in Kategori → Sunting.
+
 ## Develop
 
 ```bash
@@ -39,6 +48,7 @@ The IndexedDB schema is versioned in `src/db.ts`:
 - v1: categories, places, photos
 - v2: `routes` table (recent "On the way" routes)
 - v3: `practical` field on every place (existing spots get `{}`, meaning all Unknown)
+- v4: categories get a line `icon` (and optional `illustrationId`); places may have a `rating`
 
 Backups are JSON version 2 and include routes. Version 1 backups still import.
 

@@ -8,6 +8,7 @@ import { distanceKm, formatDistance, googleMapsUrl, wazeUrl } from '../lib/geo'
 import { areaFromAddress, suggestTag, tagUrls, tiktokSearchUrl } from '../lib/social'
 import type { Place } from '../types'
 import { Cover, StatusBadge } from '../components/common'
+import { Rating } from '../components/PlaceBits'
 import { PhotoViewer, Thumb } from '../components/PhotoViewer'
 import { LinkCard } from '../components/LinkCard'
 import { PracticalDetails } from '../components/PracticalBadges'
@@ -80,6 +81,11 @@ export function PlacePage({ id }: { id: string }) {
       <div className="page-body">
         <h1 className="place-title">{place.name}</h1>
         {place.address && <p className="place-sub">{place.address}</p>}
+        {place.rating ? (
+          <div className="place-rating">
+            <Rating value={place.rating} />
+          </div>
+        ) : null}
 
         <div className="stats">
           <div className="stat">

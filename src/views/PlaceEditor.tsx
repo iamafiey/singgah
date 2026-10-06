@@ -25,6 +25,7 @@ interface Draft {
   links: SocialLink[]
   tags: string[]
   practical: PracticalInfo
+  rating?: number
 }
 
 export function PlaceEditor({ id }: { id?: string }) {
@@ -68,6 +69,7 @@ export function PlaceEditor({ id }: { id?: string }) {
           links: p.links,
           tags: p.tags,
           practical: p.practical ?? {},
+          rating: p.rating,
         })
       }
     })
@@ -96,7 +98,7 @@ export function PlaceEditor({ id }: { id?: string }) {
         addedPhotos.current.add(pid)
         setDraft((d) => ({ ...d, photoIds: [...d.photoIds, pid] }))
       } catch {
-        showToast(`Couldn’t read ${f.name}`)
+        showToast(t('edit.readFailed', { name: f.name }))
       } finally {
         setBusyPhotos((n) => n - 1)
       }
@@ -205,6 +207,7 @@ export function PlaceEditor({ id }: { id?: string }) {
       links: draft.links,
       tags: pendingTag && !draft.tags.includes(pendingTag) ? [...draft.tags, pendingTag] : draft.tags,
       practical: cleanPractical(draft.practical),
+      rating: draft.rating,
       visited: original?.visited ?? false,
       isSample: false,
       createdAt: original?.createdAt ?? now,
@@ -301,10 +304,10 @@ export function PlaceEditor({ id }: { id?: string }) {
                   <IconX size={14} />
                 </button>
                 <div className="photo-move">
-                  <button type="button" aria-label="Move left" disabled={i === 0} onClick={() => movePhoto(i, -1)}>
+                  <button type="button" aria-label={t('edit.moveLeft')} disabled={i === 0} onClick={() => movePhoto(i, -1)}>
                     <IconChevL size={16} />
                   </button>
-                  <button type="button" aria-label="Move right" disabled={i === draft.photoIds.length - 1} onClick={() => movePhoto(i, 1)}>
+                  <button type="button" aria-label={t('edit.moveRight')} disabled={i === draft.photoIds.length - 1} onClick={() => movePhoto(i, 1)}>
                     <IconChevR size={16} />
                   </button>
                 </div>
@@ -320,7 +323,7 @@ export function PlaceEditor({ id }: { id?: string }) {
             </label>
             <label className="photo-add">
               <IconCamera />
-              <span>Camera</span>
+              <span>{t('edit.camera')}</span>
               <input type="file" accept="image/*" capture="environment" hidden onChange={(e) => (addFiles(e.target.files), (e.target.value = ''))} />
             </label>
           </div>
@@ -422,6 +425,34 @@ export function PlaceEditor({ id }: { id?: string }) {
         <div className="field">
           <span className="label">{t('edit.hours')}</span>
           <HoursEditor value={draft.hours} onChange={(h) => set('hours', h)} />
+        </div>
+
+        <div className="field">
+          <span className="label">{t('edit.rating')}</span>
+          <div className="stars" role="radiogroup" aria-label={t('edit.rating')}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                role="radio"
+                aria-checked={draft.rating === n}
+                aria-label={t('rating.aria', { n })}
+                className={`star ${draft.rating && n <= draft.rating ? 'on' : ''}`}
+                onClick={() => set('rating', draft.rating === n ? undefined : n)}
+              >
+                <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />
+                </svg>
+              </button>
+            ))}
+            {draft.rating ? (
+              <button type="button" className="btn btn-text small" onClick={() => set('rating', undefined)}>
+                {t('common.remove')}
+              </button>
+            ) : (
+              <span className="muted small">{t('edit.ratingHint')}</span>
+            )}
+          </div>
         </div>
 
         <PracticalEditor value={draft.practical} onChange={(v) => set('practical', v)} />

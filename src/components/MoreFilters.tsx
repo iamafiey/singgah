@@ -4,19 +4,27 @@ import { applyFilters, usePlaces } from '../hooks'
 import { PRACTICAL_FILTERS } from '../config/practicalTags'
 import { text } from '../lib/practical'
 import { Modal } from './common'
-import { IconFilter } from './Icons'
+import { IconFilter, IconSliders } from './Icons'
 
-/** "Filters" chip + sheet for the practical-tag filters. Used wherever FilterChips is. */
-export function MoreFiltersButton() {
+/** "Filters" button (chip or round icon) + sheet for the practical-tag filters. */
+export function MoreFiltersButton({ variant = 'chip' }: { variant?: 'chip' | 'icon' }) {
   const { t, practicalFilter } = useApp()
   const [open, setOpen] = useState(false)
   const n = practicalFilter.length
+  const label = n ? `${t('filters.more')} (${n})` : t('filters.more')
   return (
     <>
-      <button type="button" className={`chip chip-filters ${n ? 'on' : ''}`} onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={n ? `${t('filters.more')} (${n})` : t('filters.more')}>
-        <IconFilter size={16} /> {t('filters.more')}
-        {n > 0 && <span className="chip-count">{n}</span>}
-      </button>
+      {variant === 'icon' ? (
+        <button type="button" className={`map-round ${n ? 'on' : ''}`} onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={label} title={label}>
+          <IconSliders size={20} />
+          {n > 0 && <span className="round-count">{n}</span>}
+        </button>
+      ) : (
+        <button type="button" className={`chip chip-filters ${n ? 'on' : ''}`} onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={label}>
+          <IconFilter size={16} /> {t('filters.more')}
+          {n > 0 && <span className="chip-count">{n}</span>}
+        </button>
+      )}
       {open && <MoreFiltersSheet onClose={() => setOpen(false)} />}
     </>
   )

@@ -21,6 +21,8 @@ export interface PracticalOption {
   badge?: boolean
   /** Extra words that should find this value in search (both languages). */
   keywords?: string[]
+  /** Short text shown inline on cards next to Buka/Tutup (e.g. "Halal"). Only options with this are shown. */
+  meta?: Text
 }
 
 export interface PracticalTagDef {
@@ -55,10 +57,10 @@ export const PRACTICAL_TAGS: PracticalTagDef[] = [
     type: 'single',
     // No tag-level keywords here: "halal" must not find Non-halal spots. Option keywords cover it.
     options: [
-      { id: 'jakim', icon: '✅', label: { en: 'Halal certified (JAKIM)', ms: 'Sijil halal (JAKIM)' }, short: { en: 'Halal (JAKIM)', ms: 'Halal (JAKIM)' }, keywords: ['halal', 'jakim', 'certified', 'sijil'] },
-      { id: 'muslim-owned', icon: '🌙', label: { en: 'Muslim-owned', ms: 'Milik Muslim' }, keywords: ['halal', 'muslim', 'owned', 'milik'] },
-      { id: 'muslim-friendly', icon: '🤝', label: { en: 'Muslim-friendly', ms: 'Mesra Muslim' }, keywords: ['muslim', 'friendly', 'mesra', 'pork-free', 'no-pork'] },
-      { id: 'non-halal', icon: '🚫', label: { en: 'Non-halal', ms: 'Tidak halal' }, keywords: ['non-halal', 'nonhalal', 'tidak-halal'] },
+      { id: 'jakim', icon: '✅', label: { en: 'Halal certified (JAKIM)', ms: 'Sijil halal (JAKIM)' }, short: { en: 'Halal (JAKIM)', ms: 'Halal (JAKIM)' }, meta: { en: 'Halal', ms: 'Halal' }, keywords: ['halal', 'jakim', 'certified', 'sijil'] },
+      { id: 'muslim-owned', icon: '🌙', label: { en: 'Muslim-owned', ms: 'Milik Muslim' }, meta: { en: 'Muslim-owned', ms: 'Milik Muslim' }, keywords: ['halal', 'muslim', 'owned', 'milik'] },
+      { id: 'muslim-friendly', icon: '🤝', label: { en: 'Muslim-friendly', ms: 'Mesra Muslim' }, meta: { en: 'Muslim-friendly', ms: 'Mesra Muslim' }, keywords: ['muslim', 'friendly', 'mesra', 'pork-free', 'no-pork'] },
+      { id: 'non-halal', icon: '🚫', label: { en: 'Non-halal', ms: 'Tidak halal' }, meta: { en: 'Non-halal', ms: 'Tidak halal' }, keywords: ['non-halal', 'nonhalal', 'tidak-halal'] },
     ],
   },
   {

@@ -3,6 +3,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db, deleteCategory } from '../db'
 import { useApp } from '../state'
 import { uid } from '../lib/id'
+import { compressIllustration } from '../lib/image'
+import { CATEGORY_ICONS, DEFAULT_ICON } from '../components/categoryIcons'
+import { CategoryIcon, CategoryIllustration } from '../components/CategoryIcon'
 import type { Category } from '../types'
 import { Modal } from '../components/common'
 import { IconDown, IconEdit, IconPlus, IconTrash, IconUp } from '../components/Icons'
@@ -29,7 +32,7 @@ export function CategoriesView() {
   }
 
   const addNew = () => {
-    setEditing({ id: '', name: '', emoji: '⭐', color: SWATCHES[categories.length % SWATCHES.length], order: categories.length })
+    setEditing({ id: '', name: '', emoji: '⭐', icon: DEFAULT_ICON, color: SWATCHES[categories.length % SWATCHES.length], order: categories.length })
   }
 
   return (
@@ -44,7 +47,7 @@ export function CategoriesView() {
         {categories.map((c, i) => (
           <li key={c.id} className="cat-row" style={{ '--c': c.color } as CSSProperties}>
             <button className="cat-row-main" onClick={() => setEditing(c)} aria-label={`${t('cat.edit')} ${catName(c)}`}>
-              <span className="cat-badge">{c.emoji}</span>
+              <CategoryIllustration category={c} size={52} />
               <span className="cat-row-text">
                 <strong>{catName(c)}</strong>
                 <small className="muted">{t('cat.places', { n: counts?.get(c.id) ?? 0 })}</small>
@@ -81,15 +84,33 @@ function CategoryForm({ initial, onClose }: { initial: Category; onClose: () => 
   const [name, setName] = useState(initial.id ? catName(initial) : '')
   const [emoji, setEmoji] = useState(initial.emoji)
   const [color, setColor] = useState(initial.color)
+  const [icon, setIcon] = useState(initial.icon ?? DEFAULT_ICON)
+  const [illustrationId, setIllustrationId] = useState(initial.illustrationId)
+  const [busy, setBusy] = useState(false)
+
+  const uploadIllustration = async (file: File | undefined) => {
+    if (!file) return
+    setBusy(true)
+    try {
+      const { blob, thumb } = await compressIllustration(file)
+      const id = uid()
+      await db.photos.add({ id, blob, thumb })
+      setIllustrationId(id)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const save = async () => {
     const n = name.trim() || t('cat.newName')
     if (initial.id) {
       const renamed = initial.renamed || n !== catName(initial)
-      await db.categories.update(initial.id, { name: renamed ? n : initial.name, emoji, color, renamed })
+      await db.categories.update(initial.id, { name: renamed ? n : initial.name, emoji, color, icon, illustrationId, renamed })
     } else {
-      await db.categories.add({ id: uid(), name: n, emoji, color, order: initial.order })
+      await db.categories.add({ id: uid(), name: n, emoji, color, icon, illustrationId, order: initial.order })
     }
+    // Remove a replaced illustration
+    if (initial.illustrationId && initial.illustrationId !== illustrationId) await db.photos.delete(initial.illustrationId)
     onClose()
   }
 
@@ -106,8 +127,9 @@ function CategoryForm({ initial, onClose }: { initial: Category; onClose: () => 
       }
     >
       <div className="cat-preview" style={{ '--c': color } as CSSProperties}>
-        <span className="cat-badge big">{emoji || '📍'}</span>
+        <CategoryIllustration category={{ ...initial, emoji: emoji || '📍', color, illustrationId }} size={64} />
         <strong>{name || t('cat.newName')}</strong>
+        <span className="cat-preview-icon"><CategoryIcon icon={icon} size={18} /></span>
       </div>
       <label className="field">
         <span className="label">{t('cat.name')}</span>
@@ -115,13 +137,39 @@ function CategoryForm({ initial, onClose }: { initial: Category; onClose: () => 
       </label>
       <div className="field">
         <span className="label">{t('cat.emoji')}</span>
+        <p className="muted small">{t('cat.emojiHint')}</p>
         <div className="emoji-grid">
           {EMOJIS.map((e) => (
             <button key={e} type="button" className={`emoji-opt ${emoji === e ? 'on' : ''}`} onClick={() => setEmoji(e)} aria-pressed={emoji === e}>
               {e}
             </button>
           ))}
-          <input className="emoji-custom" value={EMOJIS.includes(emoji) ? '' : emoji} onChange={(e) => setEmoji([...e.target.value].slice(-2).join('') || initial.emoji)} placeholder="✏️" aria-label="Custom emoji" maxLength={8} />
+          <input className="emoji-custom" value={EMOJIS.includes(emoji) ? '' : emoji} onChange={(e) => setEmoji([...e.target.value].slice(-2).join('') || initial.emoji)} placeholder="✏️" aria-label={t('cat.customEmoji')} maxLength={8} />
+        </div>
+      </div>
+      <div className="field">
+        <span className="label">{t('cat.illustration')}</span>
+        <div className="row gap-s wrap">
+          <label className="btn btn-ghost small">
+            {busy ? t('edit.processing') : illustrationId ? t('cat.changeIllustration') : t('cat.uploadIllustration')}
+            <input type="file" accept="image/png,image/webp,image/svg+xml,image/*" hidden onChange={(e) => (uploadIllustration(e.target.files?.[0]), (e.target.value = ''))} />
+          </label>
+          {illustrationId && (
+            <button type="button" className="btn btn-text small" onClick={() => setIllustrationId(undefined)}>
+              {t('common.remove')}
+            </button>
+          )}
+        </div>
+        <p className="muted small">{t('cat.illustrationHint')}</p>
+      </div>
+      <div className="field">
+        <span className="label">{t('cat.lineIcon')}</span>
+        <div className="emoji-grid">
+          {Object.keys(CATEGORY_ICONS).map((id) => (
+            <button key={id} type="button" className={`emoji-opt icon-opt ${icon === id ? 'on' : ''}`} onClick={() => setIcon(id)} aria-pressed={icon === id} aria-label={id}>
+              <CategoryIcon icon={id} size={20} />
+            </button>
+          ))}
         </div>
       </div>
       <div className="field">
@@ -130,7 +178,7 @@ function CategoryForm({ initial, onClose }: { initial: Category; onClose: () => 
           {SWATCHES.map((s) => (
             <button key={s} type="button" className={`swatch ${color === s ? 'on' : ''}`} style={{ background: s }} onClick={() => setColor(s)} aria-label={s} aria-pressed={color === s} />
           ))}
-          <label className="swatch swatch-custom" style={{ background: SWATCHES.includes(color) ? undefined : color }} aria-label="Custom colour">
+          <label className="swatch swatch-custom" style={{ background: SWATCHES.includes(color) ? undefined : color }} aria-label={t('cat.customColor')}>
             <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
           </label>
         </div>

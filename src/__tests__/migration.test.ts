@@ -3,7 +3,7 @@ import Dexie from 'dexie'
 import { describe, expect, it } from 'vitest'
 
 describe('Dexie migration from v1 to the current version', () => {
-  it('keeps existing spots and adds routes (v2) and practical tags (v3)', async () => {
+  it('keeps existing spots and adds routes (v2), practical tags (v3) and category icons (v4)', async () => {
     // Build a database exactly as v1 of the app created it.
     const old = new Dexie('singgah')
     old.version(1).stores({ categories: 'id, order', places: 'id, categoryId, createdAt, name, isSample', photos: 'id' })
@@ -49,7 +49,7 @@ describe('Dexie migration from v1 to the current version', () => {
     // Now open with the current app schema.
     const { db, rememberRoute, MAX_SAVED_ROUTES } = await import('../db')
     await db.open()
-    expect(db.verno).toBe(3)
+    expect(db.verno).toBe(4)
 
     const mine = await db.places.get('mine')
     expect(mine).toMatchObject({ name: 'My Kopitiam', notes: 'teh tarik', visited: true, tags: ['kopitiam'] })
@@ -58,6 +58,11 @@ describe('Dexie migration from v1 to the current version', () => {
     // untouched sample spots get the example tags
     const sample = await db.places.get('sample-kopikopi')
     expect(sample!.practical.halal).toEqual({ value: 'muslim-owned' })
+    // v4: untouched samples get Malay notes; user spots are never rewritten
+    expect(sample!.notes).toMatch(/^Tempat contoh/)
+    expect(mine!.notes).toBe('teh tarik')
+    // v4: categories get a line icon (presets get their matching one)
+    expect((await db.categories.get('cat-cafe'))!.icon).toBe('coffee')
     // populate must not run on upgrade: no duplicate seed data
     expect(await db.places.count()).toBe(2)
     expect(await db.categories.count()).toBe(1)

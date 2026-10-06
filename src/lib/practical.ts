@@ -85,3 +85,8 @@ export function cleanPractical(info: PracticalInfo): PracticalInfo {
   }
   return out
 }
+
+/** Inline meta words for cards ("Halal"), from options that define `meta`. */
+export function metaLabels(info: PracticalInfo | undefined, lang: Lang): string[] {
+  return setValues(info).flatMap(({ options }) => options.filter((o) => o.meta).map((o) => text(o.meta!, lang)))
+}

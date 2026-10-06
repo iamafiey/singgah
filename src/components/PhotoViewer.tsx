@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePhotoUrl } from '../hooks'
+import { useApp } from '../state'
 import { IconChevL, IconChevR, IconX } from './Icons'
 
 function Slide({ id }: { id: string }) {
@@ -9,6 +10,7 @@ function Slide({ id }: { id: string }) {
 
 /** Full-screen swipeable photo viewer. */
 export function PhotoViewer({ ids, start, onClose, closeLabel }: { ids: string[]; start: number; onClose: () => void; closeLabel: string }) {
+  const { t } = useApp()
   const [i, setI] = useState(start)
   const touchX = useRef<number | null>(null)
   const prev = () => setI((x) => (x - 1 + ids.length) % ids.length)
@@ -45,10 +47,10 @@ export function PhotoViewer({ ids, start, onClose, closeLabel }: { ids: string[]
       </button>
       {ids.length > 1 && (
         <>
-          <button className="viewer-nav left icon-btn" aria-label="Previous" onClick={prev}>
+          <button className="viewer-nav left icon-btn" aria-label={t('viewer.prev')} onClick={prev}>
             <IconChevL />
           </button>
-          <button className="viewer-nav right icon-btn" aria-label="Next" onClick={next}>
+          <button className="viewer-nav right icon-btn" aria-label={t('viewer.next')} onClick={next}>
             <IconChevR />
           </button>
           <div className="viewer-count">

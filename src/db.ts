@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Category, Photo, Place, SavedRoute } from './types'
-import { SAMPLE_PRACTICAL, presetCategories, samplePlaces } from './lib/seed'
+import { DEFAULT_ICON } from './components/categoryIcons'
+import { PRESETS, SAMPLE_PRACTICAL, presetCategories, samplePlaces } from './lib/seed'
 import { uid } from './lib/id'
 
 export const db = new Dexie('singgah') as Dexie & {
@@ -35,6 +36,31 @@ db.version(3)
         }
       }),
   )
+
+// v4: categories get a line icon (map labels, card corners) and may get a custom illustration.
+// Preset categories get their matching icon; custom ones get a generic pin. Spots may get a rating (optional, no migration needed).
+// Untouched sample spots (editing one clears isSample) get the Bahasa Melayu notes, ratings and visited examples.
+db.version(4)
+  .stores({})
+  .upgrade(async (tx) => {
+    await tx
+      .table('categories')
+      .toCollection()
+      .modify((c: Category) => {
+        if (!c.icon) c.icon = PRESETS.find((p) => p.key === c.presetKey)?.icon ?? DEFAULT_ICON
+      })
+    const samples = new Map(samplePlaces().map((p) => [p.id, p]))
+    await tx
+      .table('places')
+      .toCollection()
+      .modify((p: Place) => {
+        const s = p.isSample ? samples.get(p.id) : undefined
+        if (!s) return
+        p.notes = s.notes
+        p.practical = structuredClone(s.practical)
+        if (p.rating === undefined && s.rating) p.rating = s.rating
+      })
+  })
 
 db.on('populate', (tx) => {
   tx.table('categories').bulkAdd(presetCategories())

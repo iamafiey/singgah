@@ -9,7 +9,8 @@ import { getRoute, RoutingError, type Route } from '../lib/routing'
 import { formatDuration, matchRoute, type ArrivalStatus } from '../lib/onTheWay'
 import type { Place, RoutePoint, SavedRoute } from '../types'
 import type { TKey } from '../i18n'
-import { FilterChips } from '../components/FilterChips'
+import { CategoryRow } from '../components/CategoryRow'
+import { MoreFiltersButton } from '../components/MoreFilters'
 import { PlaceSearchField } from '../components/PlaceSearchField'
 import { PracticalBadges } from '../components/PracticalBadges'
 import { IconChevR, IconDown, IconEdit, IconNav, IconPin, IconUp, IconX } from '../components/Icons'
@@ -209,7 +210,10 @@ export default function OnTheWayPanel({
           </div>
           <div className="otw-field">
             <span className="psf-label">{t('tab.categories')}</span>
-            <FilterChips />
+            <CategoryRow size={48} />
+            <div>
+              <MoreFiltersButton />
+            </div>
           </div>
           {onlyOpenToggle}
 

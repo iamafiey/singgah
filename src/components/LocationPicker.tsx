@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import { useApp } from '../state'
+import { addBasemap } from '../lib/basemap'
 import { KLANG_VALLEY, getCurrentPosition, searchAddress, type GeocodeResult, type LatLng } from '../lib/geo'
 import { IconLocate, IconSearch } from './Icons'
 
@@ -8,7 +9,7 @@ const pickIcon = () =>
   L.divIcon({ className: 'pin-wrap', html: '<div class="pin pin-pick" style="--c:var(--accent)"><span>📍</span></div>', iconSize: [40, 48], iconAnchor: [20, 46] })
 
 export function LocationPicker({ value, onChange }: { value: LatLng | null; onChange: (p: LatLng, address?: string) => void }) {
-  const { t, lang, userLocation, showToast } = useApp()
+  const { t, lang, userLocation, showToast, dark } = useApp()
   const elRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
@@ -21,12 +22,13 @@ export function LocationPicker({ value, onChange }: { value: LatLng | null; onCh
   useEffect(() => {
     if (!elRef.current || mapRef.current) return
     const start = value ?? userLocation ?? KLANG_VALLEY
-    const map = L.map(elRef.current, { zoomControl: true, attributionControl: true }).setView([start.lat, start.lng], value ? 16 : userLocation ? 14 : 11)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map)
+    const map = L.map(elRef.current, { zoomControl: true, attributionControl: true, minZoom: 4, maxZoom: 19 }).setView([start.lat, start.lng], value ? 16 : userLocation ? 14 : 11)
     map.attributionControl.setPrefix(false)
     map.on('click', (e: L.LeafletMouseEvent) => onChangeRef.current({ lat: e.latlng.lat, lng: e.latlng.lng }))
     mapRef.current = map
+    const removeBasemap = addBasemap(map, dark ? 'dark' : 'light')
     return () => {
+      removeBasemap()
       map.remove()
       mapRef.current = null
       markerRef.current = null

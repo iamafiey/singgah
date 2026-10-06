@@ -46,3 +46,18 @@ export async function fetchImageBlob(url: string): Promise<Blob> {
   if (!blob.type.startsWith('image/')) throw new Error('Not an image')
   return blob
 }
+
+/** Category illustrations: square-ish PNG (keeps transparency), max 320px. */
+export async function compressIllustration(file: Blob): Promise<{ blob: Blob; thumb: Blob }> {
+  const src = await loadBitmap(file)
+  const w = 'naturalWidth' in src ? src.naturalWidth : src.width
+  const h = 'naturalHeight' in src ? src.naturalHeight : src.height
+  const scale = Math.min(1, 320 / Math.max(w, h))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(w * scale)
+  canvas.height = Math.round(h * scale)
+  canvas.getContext('2d')!.drawImage(src, 0, 0, canvas.width, canvas.height)
+  if ('close' in src) src.close()
+  const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not encode image'))), 'image/png'))
+  return { blob, thumb: blob }
+}

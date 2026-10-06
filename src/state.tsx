@@ -83,9 +83,8 @@ function usePersisted<T>(key: string, initial: T) {
   return [value, setValue] as const
 }
 
-function defaultLang(): Lang {
-  return typeof navigator !== 'undefined' && /^ms|^id/i.test(navigator.language) ? 'ms' : 'en'
-}
+/** Bahasa Melayu by default; English is available in Tetapan. */
+const DEFAULT_LANG: Lang = 'ms'
 
 // ---------- Context ----------
 export type LocationStatus = 'pending' | 'granted' | 'denied'
@@ -96,6 +95,8 @@ interface AppState {
   setLang: (l: Lang) => void
   theme: Theme
   setTheme: (t: Theme) => void
+  /** The theme actually in effect (system resolved). */
+  dark: boolean
   t: (key: TKey, vars?: Record<string, string | number>) => string
   categories: Category[]
   categoryById: Map<string, Category>
@@ -125,7 +126,8 @@ const Ctx = createContext<AppState | null>(null)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const route = useRoute()
-  const [lang, setLang] = usePersisted<Lang>('singgah.lang', defaultLang())
+  // v2 key: older versions saved the browser language automatically, so everyone starts in BM once.
+  const [lang, setLang] = usePersisted<Lang>('singgah.lang.v2', DEFAULT_LANG)
   const [theme, setTheme] = usePersisted<Theme>('singgah.theme', 'system')
   const [sortBy, setSortBy] = usePersisted<SortBy>('singgah.sort', 'distance')
   const [catFilter, setCatFilter] = useState<string[]>([])
@@ -134,6 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [query, setQuery] = useState('')
   const [focus, setFocus] = useState<{ id: string; n: number } | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [dark, setDark] = useState(false)
   const [userLocation, setUserLocation] = useState<LatLng | null>(null)
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('pending')
 
@@ -177,9 +180,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => {
-      const dark = theme === 'dark' || (theme === 'system' && mq.matches)
-      root.dataset.theme = dark ? 'dark' : 'light'
-      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#121212' : '#ffffff')
+      const isDark = theme === 'dark' || (theme === 'system' && mq.matches)
+      root.dataset.theme = isDark ? 'dark' : 'light'
+      setDark(isDark)
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark ? '#17191a' : '#f4f1ea')
     }
     apply()
     mq.addEventListener('change', apply)
@@ -212,6 +216,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLang,
     theme,
     setTheme,
+    dark,
     t,
     categories,
     categoryById,
