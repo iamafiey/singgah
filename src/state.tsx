@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './db'
+import { ensureBundledSpots } from './lib/bundledSpots'
 import { translate, type Lang, type TKey } from './i18n'
 import { getCurrentPosition, type LatLng } from './lib/geo'
 import type { Category } from './types'
@@ -193,6 +194,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = lang
   }, [lang])
+
+  // Spots that ship with photos are added once per device.
+  useEffect(() => {
+    ensureBundledSpots().catch(() => {})
+  }, [])
 
   // Drop filters pointing at deleted categories
   useEffect(() => {

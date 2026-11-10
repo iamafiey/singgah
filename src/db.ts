@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type { Category, Photo, Place, SavedRoute } from './types'
 import { DEFAULT_ICON } from './components/categoryIcons'
-import { PRESETS, SAMPLE_PRACTICAL, presetCategories, samplePlaces } from './lib/seed'
+import { PRESETS, PRESET_ORDER_V1, SAMPLE_PRACTICAL, presetCategories, samplePlaces } from './lib/seed'
 import { uid } from './lib/id'
 
 export const db = new Dexie('singgah') as Dexie & {
@@ -60,6 +60,30 @@ db.version(4)
         p.practical = structuredClone(s.practical)
         if (p.rating === undefined && s.rating) p.rating = s.rating
       })
+  })
+
+// v5: new preset categories (Zoo, Arcade, Hotel, Camping) with bundled illustrations. They are added
+// for existing users too. If the categories are still in the original default order, they're
+// reordered to the new default (Restaurant, Cafe, Park, Zoo, Hiking, Arcade…); custom orders are kept.
+db.version(5)
+  .stores({})
+  .upgrade(async (tx) => {
+    const table = tx.table('categories')
+    const cats = (await table.toArray()) as Category[]
+    const haveKeys = new Set(cats.map((c) => c.presetKey).filter(Boolean))
+    const sorted = [...cats].sort((a, b) => a.order - b.order)
+    const untouched =
+      sorted.length === PRESET_ORDER_V1.length && sorted.every((c, i) => c.presetKey === PRESET_ORDER_V1[i])
+    const presets = presetCategories()
+    if (untouched) {
+      await table.bulkPut([
+        ...sorted.map((c) => ({ ...c, order: PRESETS.findIndex((p) => p.key === c.presetKey) })),
+        ...presets.filter((p) => !haveKeys.has(p.presetKey)),
+      ])
+    } else {
+      let next = Math.max(-1, ...cats.map((c) => c.order)) + 1
+      await table.bulkAdd(presets.filter((p) => !haveKeys.has(p.presetKey) && !cats.some((c) => c.id === p.id)).map((p) => ({ ...p, order: next++ })))
+    }
   })
 
 db.on('populate', (tx) => {

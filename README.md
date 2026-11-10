@@ -23,7 +23,8 @@ A personal, mobile-first map of places you've saved, mostly found on social medi
 - **Singgahan:** "Nak pergi" / "Sudah singgah" tabs, driven by the same visited flag as the map ✓.
 - **Language:** Bahasa Melayu by default; English is in Tetapan.
 - **Basemap:** an UrbanBlueprint-inspired style (`src/lib/mapStyle.ts`) on free OpenFreeMap vector tiles, rendered with MapLibre inside Leaflet and loaded on demand. It falls back to OpenStreetMap raster tiles when WebGL or the tile service isn't available.
-- **Illustrations:** put PNGs in `public/illustrations/` named after the preset key (`cafe.png`, `restaurant.png`, `mamak.png`, `park.png`, `playground.png`, `hiking.png`, `shopping.png`, `attraction.png`) plus `want.png` and `visited.png` for the Singgahan tabs, then list the names in `BUNDLED_ILLUSTRATIONS` (`src/components/CategoryIcon.tsx`). You can also upload an illustration per category in Kategori → Sunting.
+- **Illustrations:** category illustrations live in `public/illustrations/<presetKey>.png` (arcade, attraction, cafe, camping, hiking, hotel, park, playground, restaurant, shopping, zoo) and are listed in `BUNDLED_ILLUSTRATIONS` (`src/components/CategoryIcon.tsx`). Add `want.png` / `visited.png` there for the Singgahan tabs. You can also upload one per category in Kategori → Sunting.
+- **Bundled spots:** `src/lib/bundledSpots.ts` adds the shops in `public/kedai/` (with their photos) once per device. Their locations are approximate, and hours, halal status and ratings are left for you to fill in.
 
 ## Develop
 
@@ -49,6 +50,7 @@ The IndexedDB schema is versioned in `src/db.ts`:
 - v2: `routes` table (recent "On the way" routes)
 - v3: `practical` field on every place (existing spots get `{}`, meaning all Unknown)
 - v4: categories get a line `icon` (and optional `illustrationId`); places may have a `rating`
+- v5: new preset categories (Zoo, Arcade, Hotel, Camping); untouched default category order is updated to the new default
 
 Backups are JSON version 2 and include routes. Version 1 backups still import.
 

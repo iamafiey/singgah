@@ -24,7 +24,7 @@ export function categoryIconSvg(icon: string | undefined, size = 15): string {
  * Bundled illustrations for preset categories, served from public/illustrations/<presetKey>.png.
  * Add a preset key here once its file is in place; until then the category emoji is shown.
  */
-export const BUNDLED_ILLUSTRATIONS: string[] = []
+export const BUNDLED_ILLUSTRATIONS: string[] = ['arcade', 'attraction', 'cafe', 'camping', 'hiking', 'hotel', 'park', 'playground', 'restaurant', 'shopping', 'zoo']
 
 /**
  * The colourful category illustration: a custom upload if there is one, then a bundled file for

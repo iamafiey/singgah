@@ -555,7 +555,7 @@ input[type='search']::-webkit-search-cancel-button { display: none; }
 
 .illus { position: relative; display: grid; place-items: center; border-radius: 50%; overflow: hidden; flex: none; background: color-mix(in srgb, var(--c, #c9a27e) 16%, #fbf7ef); }
 [data-theme='dark'] .illus { background: color-mix(in srgb, var(--c, #c9a27e) 22%, #2a2d2e); }
-.illus img { width: 100%; height: 100%; object-fit: cover; }
+.illus img { width: 70%; height: 70%; object-fit: contain; }
 .illus-emoji { line-height: 1; }
 .cat-row-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 12px 4px 6px; margin: 0 -12px; padding-left: 16px; padding-right: 16px; scrollbar-width: none; }
 .cat-row-scroll::-webkit-scrollbar { display: none; }

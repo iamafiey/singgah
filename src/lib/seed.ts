@@ -1,15 +1,22 @@
 import type { Category, DayHours, Place, PracticalInfo, WeekHours } from '../types'
 
 export const PRESETS: Array<Pick<Category, 'emoji' | 'color' | 'icon'> & { key: string; name: string }> = [
-  { key: 'cafe', name: 'Cafe', emoji: '☕', color: '#b0703c', icon: 'coffee' },
   { key: 'restaurant', name: 'Diner/Restaurant', emoji: '🍽️', color: '#e0593b', icon: 'utensils' },
-  { key: 'mamak', name: 'Mamak', emoji: '🫓', color: '#d99a14', icon: 'teh' },
+  { key: 'cafe', name: 'Cafe', emoji: '☕', color: '#b0703c', icon: 'coffee' },
   { key: 'park', name: 'Recreational Park', emoji: '🌳', color: '#3f9a5a', icon: 'tree' },
-  { key: 'playground', name: 'Playground', emoji: '🛝', color: '#e5679a', icon: 'playground' },
+  { key: 'zoo', name: 'Zoo', emoji: '🐯', color: '#e0912b', icon: 'paw' },
   { key: 'hiking', name: 'Hiking/Nature', emoji: '⛰️', color: '#2f7d74', icon: 'mountain' },
-  { key: 'shopping', name: 'Shopping', emoji: '🛍️', color: '#8a5cd1', icon: 'bag' },
+  { key: 'arcade', name: 'Arcade', emoji: '🕹️', color: '#d64545', icon: 'arcade' },
+  { key: 'playground', name: 'Playground', emoji: '🛝', color: '#e5679a', icon: 'playground' },
+  { key: 'mamak', name: 'Mamak', emoji: '🫓', color: '#d99a14', icon: 'teh' },
   { key: 'attraction', name: 'Attraction', emoji: '🎡', color: '#3a7bd5', icon: 'ferris' },
+  { key: 'shopping', name: 'Shopping', emoji: '🛍️', color: '#8a5cd1', icon: 'bag' },
+  { key: 'hotel', name: 'Hotel', emoji: '🏨', color: '#5b7a99', icon: 'bed' },
+  { key: 'camping', name: 'Camping', emoji: '⛺', color: '#c98a2b', icon: 'tent' },
 ]
+
+/** The preset order before v5 — used to tell whether someone has reordered their categories. */
+export const PRESET_ORDER_V1 = ['cafe', 'restaurant', 'mamak', 'park', 'playground', 'hiking', 'shopping', 'attraction']
 
 export const presetCategories = (): Category[] =>
   PRESETS.map((p, i) => ({ id: `cat-${p.key}`, name: p.name, emoji: p.emoji, color: p.color, icon: p.icon, order: i, presetKey: p.key }))
